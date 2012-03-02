@@ -1,0 +1,9 @@
+Documentation
+====================
+
+.. toctree::
+   runpyGBot <runpyGBot>
+   pyGBot/core <pyGBot/core>
+   pyGBot/log <pyGBot/log>
+   pyGBot/PluginEvents <pyGBot/PluginEvents>
+   pyGBot/BasePlugin <pyGBot/BasePlugin>

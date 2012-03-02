@@ -1,0 +1,225 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>BasePlugin &mdash; pyGBot 0.3.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.3.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pyGBot 0.3.0 documentation" href="../index.html" />
+    <link rel="up" title="Documentation" href="../docs.html" />
+    <link rel="prev" title="PluginEvents" href="PluginEvents.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="PluginEvents.html" title="PluginEvents"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyGBot 0.3.0 documentation</a> &raquo;</li>
+          <li><a href="../docs.html" accesskey="U">Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="baseplugin">
+<h1>BasePlugin<a class="headerlink" href="#baseplugin" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pyGBot.BasePlugin.BasePlugin">
+<em class="property">class </em><tt class="descclassname">pyGBot.BasePlugin.</tt><tt class="descname">BasePlugin</tt><big>(</big><em>bot</em>, <em>options</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.activate">
+<tt class="descname">activate</tt><big>(</big><em>channel=None</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.activate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.activate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the plugin is activated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.deactivate">
+<tt class="descname">deactivate</tt><big>(</big><em>channel=None</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.deactivate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.deactivate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the plugin is deactivated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.user_join">
+<tt class="descname">user_join</tt><big>(</big><em>channel</em>, <em>username</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.user_join"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.user_join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a user is seen joining a channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.user_part">
+<tt class="descname">user_part</tt><big>(</big><em>channel</em>, <em>username</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.user_part"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.user_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a user is seen parting a channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.user_kicked">
+<tt class="descname">user_kicked</tt><big>(</big><em>channel</em>, <em>username</em>, <em>kicker</em>, <em>message=''</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.user_kicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.user_kicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a user is seen being kicked from a channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.user_quit">
+<tt class="descname">user_quit</tt><big>(</big><em>username</em>, <em>reason=''</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.user_quit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.user_quit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a user is seen quitting the network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.user_nickchange">
+<tt class="descname">user_nickchange</tt><big>(</big><em>username</em>, <em>newname</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.user_nickchange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.user_nickchange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a user is seen changing nicks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.bot_connect">
+<tt class="descname">bot_connect</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.bot_connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.bot_connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot connects to the network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.bot_join">
+<tt class="descname">bot_join</tt><big>(</big><em>channel</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.bot_join"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.bot_join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot joins a channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.bot_part">
+<tt class="descname">bot_part</tt><big>(</big><em>channel</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.bot_part"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.bot_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot parts a channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.bot_kicked">
+<tt class="descname">bot_kicked</tt><big>(</big><em>channel</em>, <em>kicker=''</em>, <em>reason=''</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.bot_kicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.bot_kicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot is kicked from a channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.bot_disconnect">
+<tt class="descname">bot_disconnect</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.bot_disconnect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.bot_disconnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot disconnects from the network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.msg_channel">
+<tt class="descname">msg_channel</tt><big>(</big><em>channel</em>, <em>user</em>, <em>message</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.msg_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.msg_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot sees a message in a channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.msg_action">
+<tt class="descname">msg_action</tt><big>(</big><em>channel</em>, <em>user</em>, <em>message</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.msg_action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.msg_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot sees an action</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.msg_private">
+<tt class="descname">msg_private</tt><big>(</big><em>user</em>, <em>message</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.msg_private"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.msg_private" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot receives a privmsg</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.msg_notice">
+<tt class="descname">msg_notice</tt><big>(</big><em>user</em>, <em>message</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.msg_notice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.msg_notice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot receives a notice</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.channel_names">
+<tt class="descname">channel_names</tt><big>(</big><em>channel</em>, <em>nameslist</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.channel_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.channel_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot receives a list of names</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.channel_topic">
+<tt class="descname">channel_topic</tt><big>(</big><em>channel</em>, <em>user</em>, <em>topic</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.channel_topic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.channel_topic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot receives a channel topic</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.BasePlugin.BasePlugin.timer_tick">
+<tt class="descname">timer_tick</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pyGBot/BasePlugin.html#BasePlugin.timer_tick"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.BasePlugin.BasePlugin.timer_tick" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called once every second</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="PluginEvents.html"
+                        title="previous chapter">PluginEvents</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="PluginEvents.html" title="PluginEvents"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyGBot 0.3.0 documentation</a> &raquo;</li>
+          <li><a href="../docs.html" >Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Morgan Lokhorst-Blight, Alex Soborov, Paul Rotering.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

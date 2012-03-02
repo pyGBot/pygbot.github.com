@@ -1,0 +1,5 @@
+PluginEvents
+==========
+
+.. autoclass:: pyGBot.PluginEvents.PluginEvents
+   :members:

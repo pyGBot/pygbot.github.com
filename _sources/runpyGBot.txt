@@ -1,0 +1,4 @@
+runpyGBot
+====================
+
+runpyGBot.py is a startup script for the bot. It simply calls :func:`pyGBot.core.run`.

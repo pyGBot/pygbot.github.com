@@ -1,0 +1,701 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyGBot.core &mdash; pyGBot 0.3.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pyGBot 0.3.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyGBot 0.3.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyGBot.core</h1><div class="highlight"><pre>
+<span class="c">##</span>
+<span class="c">##    pyGBot - Versatile IRC Bot</span>
+<span class="c">##    Copyright (C) 2008 Morgan Lokhorst-Blight, Alex Soborov, Paul Rotering</span>
+<span class="c">##</span>
+<span class="c">##    This program is free software: you can redistribute it and/or modify</span>
+<span class="c">##    it under the terms of the GNU General Public License as published by</span>
+<span class="c">##    the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c">##    (at your option) any later version.</span>
+<span class="c">##</span>
+<span class="c">##    This program is distributed in the hope that it will be useful,</span>
+<span class="c">##    but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c">##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c">##    GNU General Public License for more details.</span>
+<span class="c">##</span>
+<span class="c">##    You should have received a copy of the GNU General Public License</span>
+<span class="c">##    along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c">##</span>
+
+<span class="n">twistedversion</span> <span class="o">=</span> <span class="s">&#39;1&#39;</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">twisted</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">twistedversion</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c">#assume a pre-2.0 version of Twisted</span>
+    <span class="kn">from</span> <span class="nn">twisted.protocols</span> <span class="kn">import</span> <span class="n">irc</span>
+
+<span class="n">twistedmajor</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">twistedversion</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="k">if</span> <span class="n">twistedmajor</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">twisted.words.protocols</span> <span class="kn">import</span> <span class="n">irc</span>
+
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">reactor</span><span class="p">,</span> <span class="n">protocol</span><span class="p">,</span> <span class="n">task</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="kn">from</span> <span class="nn">contrib.configobj</span> <span class="kn">import</span> <span class="n">ConfigObj</span><span class="p">,</span> <span class="n">ConfigObjError</span>
+
+<span class="kn">from</span> <span class="nn">pyGBot</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">pyGBot.PluginEvents</span> <span class="kn">import</span> <span class="n">PluginEvents</span>
+
+<div class="viewcode-block" id="GBot"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot">[docs]</a><span class="k">class</span> <span class="nc">GBot</span><span class="p">(</span><span class="n">irc</span><span class="o">.</span><span class="n">IRCClient</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; No longer just an IRC Texas Holdem tournament dealer&#39;&#39;&#39;</span>
+
+    <span class="c">############################################################################</span>
+    <span class="c"># Public Plugin API Methods</span>
+    <span class="c">############################################################################</span>
+<div class="viewcode-block" id="GBot.pubout"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.pubout">[docs]</a>    <span class="k">def</span> <span class="nf">pubout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send a message to a channel. &quot;&quot;&quot;</span>
+        <span class="n">msgOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">channelOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">channelOut</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">msgOut</span><span class="p">)</span>
+        
+        <span class="c"># strip color codes</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[PUB-&gt;</span><span class="si">%s</span><span class="s">]</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">channelOut</span><span class="p">,</span> <span class="n">stripcolors</span><span class="p">(</span><span class="n">msgOut</span><span class="p">)))</span>
+</div>
+<div class="viewcode-block" id="GBot.privout"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.privout">[docs]</a>    <span class="k">def</span> <span class="nf">privout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send a message to a user. &quot;&quot;&quot;</span>
+        <span class="n">msgOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">userOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">userOut</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">msgOut</span><span class="p">)</span>
+        
+        <span class="c"># strip color codes</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[PRV-&gt;</span><span class="si">%s</span><span class="s">]</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">userOut</span><span class="p">,</span> <span class="n">stripcolors</span><span class="p">(</span><span class="n">msgOut</span><span class="p">)))</span>
+</div>
+<div class="viewcode-block" id="GBot.replyout"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.replyout">[docs]</a>    <span class="k">def</span> <span class="nf">replyout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send a reply. If channel is None, the reply is sent to the user;</span>
+<span class="sd">        otherwise, it is sent to the channel. Use this in plugins or commands</span>
+<span class="sd">        when an incoming message can be either from a channel or a user and the</span>
+<span class="sd">        outgoing message should be resent to the source. &quot;&quot;&quot;</span>
+        
+        <span class="n">msgOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">userOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">channel</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">privout</span><span class="p">(</span><span class="n">userOut</span><span class="p">,</span> <span class="n">msgOut</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pubout</span><span class="p">(</span><span class="n">channelOut</span><span class="p">,</span> <span class="n">msgOut</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.noteout"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.noteout">[docs]</a>    <span class="k">def</span> <span class="nf">noteout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send a notice to a user. &quot;&quot;&quot;</span>
+        <span class="n">msgOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">userOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notice</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">userOut</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">msgOut</span><span class="p">)</span>
+
+        <span class="c"># strip color codes</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[NTE-&gt;</span><span class="si">%s</span><span class="s">]</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">userOut</span><span class="p">,</span> <span class="n">stripcolors</span><span class="p">(</span><span class="n">msgOut</span><span class="p">)))</span>
+        </div>
+<div class="viewcode-block" id="GBot.invite"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.invite">[docs]</a>    <span class="k">def</span> <span class="nf">invite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send a channel invite to a user. &quot;&quot;&quot;</span>
+        <span class="n">userOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendLine</span><span class="p">(</span><span class="s">&quot;INVITE </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">userOut</span><span class="p">,</span> <span class="n">channelOut</span><span class="p">))</span>
+        
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[INVITE-&gt;</span><span class="si">%s</span><span class="s">] </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">userOut</span><span class="p">,</span> <span class="n">channelOut</span><span class="p">))</span>
+        </div>
+<div class="viewcode-block" id="GBot.joinChannel"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.joinChannel">[docs]</a>    <span class="k">def</span> <span class="nf">joinChannel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Join a channel. &quot;&quot;&quot;</span>
+        <span class="n">channelOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
+            <span class="n">keyOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">channelOut</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">keyOut</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">channelOut</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.actout"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.actout">[docs]</a>    <span class="k">def</span> <span class="nf">actout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">channel</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send an action (/me) to a channel. &quot;&quot;&quot;</span>
+        <span class="n">msgOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">channelOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">me</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">channelOut</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">msgOut</span><span class="p">)</span>
+
+        <span class="c"># strip color codes</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[ACT-&gt;</span><span class="si">%s</span><span class="s">]</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">channelOut</span><span class="p">,</span> <span class="n">stripcolors</span><span class="p">(</span><span class="n">msgOut</span><span class="p">)))</span>
+</div>
+<div class="viewcode-block" id="GBot.modestring"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.modestring">[docs]</a>    <span class="k">def</span> <span class="nf">modestring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">modestring</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set a mode string on a user or channel. &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendLine</span><span class="p">(</span><span class="s">&quot;MODE </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">modestring</span><span class="p">))</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[MODE] </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">modestring</span><span class="p">))</span>
+        </div>
+<div class="viewcode-block" id="GBot.cprivmsg"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.cprivmsg">[docs]</a>    <span class="k">def</span> <span class="nf">cprivmsg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send a CPRIVMSG. This allows channel ops to bypass server flood</span>
+<span class="sd">        limits when messaging users in their channel. &quot;&quot;&quot;</span>
+        <span class="n">msgOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">userOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendLine</span><span class="p">(</span><span class="s">&quot;CPRIVMSG </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> :</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">userOut</span><span class="p">,</span> <span class="n">channelOut</span><span class="p">,</span> <span class="n">msgOut</span><span class="p">,))</span>
+</div>
+<div class="viewcode-block" id="GBot.cnotice"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.cnotice">[docs]</a>    <span class="k">def</span> <span class="nf">cnotice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send a CNOTICE. THis allows channel ops to bypass server flood</span>
+<span class="sd">        limits when sending a notice to users in their channel. &quot;&quot;&quot;</span>
+        <span class="n">msgOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">userOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelOut</span> <span class="o">=</span> <span class="n">encodeOut</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendLine</span><span class="p">(</span><span class="s">&quot;CNOTICE </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> :</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">userOut</span><span class="p">,</span> <span class="n">channelOut</span><span class="p">,</span> <span class="n">msgOut</span><span class="p">,))</span>
+
+    <span class="c">############################################################################</span>
+    <span class="c"># Plugin Handling Methods</span>
+    <span class="c">############################################################################</span></div>
+<div class="viewcode-block" id="GBot.loadPlugins"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.loadPlugins">[docs]</a>    <span class="k">def</span> <span class="nf">loadPlugins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; (private) Load all registered plugins. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;Plugins&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">pluginnames</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;Plugins&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">pluginnames</span><span class="p">:</span>
+            <span class="n">modname</span><span class="p">,</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)</span>
+            <span class="n">plugin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadPluginFromFile</span><span class="p">(</span><span class="n">modname</span><span class="p">,</span> <span class="n">classname</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">plugin</span>
+</div>
+<div class="viewcode-block" id="GBot.loadPluginFromFile"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.loadPluginFromFile">[docs]</a>    <span class="k">def</span> <span class="nf">loadPluginFromFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pluginmodule</span><span class="p">,</span> <span class="n">pluginname</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; (private) Load a plugin from its file and initialise it. &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Loading plugin </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">pluginname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;Plugins.&#39;</span> <span class="o">+</span> <span class="n">pluginmodule</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">pluginname</span><span class="p">):</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;Plugins.&#39;</span> <span class="o">+</span> <span class="n">pluginmodule</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">pluginname</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">exec</span> <span class="s">&quot;from Plugins.&quot;</span> <span class="o">+</span> <span class="n">pluginmodule</span> <span class="o">+</span> <span class="s">&quot;.&quot;</span> <span class="o">+</span> <span class="n">pluginname</span> <span class="o">+</span> <span class="s">&quot; import &quot;</span> <span class="o">+</span> <span class="n">pluginname</span>
+        <span class="k">exec</span> <span class="s">&quot;plugin = &quot;</span> <span class="o">+</span> <span class="n">pluginname</span> <span class="o">+</span> <span class="s">&quot;(self, options)&quot;</span>
+        <span class="k">return</span> <span class="n">plugin</span>
+</div>
+<div class="viewcode-block" id="GBot.activatePlugin"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.activatePlugin">[docs]</a>    <span class="k">def</span> <span class="nf">activatePlugin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pluginname</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; (private) Activate a loaded plugin. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">pluginname</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Error: Unable to activate plugin &#39;</span> <span class="o">+</span> <span class="n">pluginname</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Activating </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">pluginname</span><span class="p">)</span>
+        <span class="n">plugin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="n">pluginname</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">plugin</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Error: Plugin </span><span class="si">%s</span><span class="s"> returned false on activation.&#39;</span> <span class="o">%</span> <span class="n">pluginname</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">for</span> <span class="n">eventname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">__events__</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Testing for event handler &quot;</span> <span class="o">+</span> <span class="n">eventname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">plugin</span><span class="p">,</span> <span class="n">eventname</span><span class="p">)</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Adding event handler &quot;</span> <span class="o">+</span> <span class="n">eventname</span> <span class="o">+</span> <span class="s">&quot; from plugin &quot;</span> <span class="o">+</span> <span class="n">pluginname</span><span class="p">)</span>
+                <span class="n">event</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">,</span> <span class="n">eventname</span><span class="p">)</span>
+                <span class="n">event</span> <span class="o">+=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">plugin</span><span class="p">,</span> <span class="n">eventname</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">activeplugins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pluginname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="GBot.deactivatePlugin"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.deactivatePlugin">[docs]</a>    <span class="k">def</span> <span class="nf">deactivatePlugin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pluginname</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; (private) Deactivates a loaded plugin. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">pluginname</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Error: Unable to deactivate plugin &#39;</span> <span class="o">+</span> <span class="n">pluginname</span><span class="p">)</span>
+            <span class="k">return</span>        
+
+        <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Deactivating </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">pluginname</span><span class="p">)</span>
+        <span class="n">plugin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="n">pluginname</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">eventname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">__events__</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Testing for event handler &quot;</span> <span class="o">+</span> <span class="n">eventname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">plugin</span><span class="p">,</span> <span class="n">eventname</span><span class="p">)</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Removing event handler &quot;</span> <span class="o">+</span> <span class="n">eventname</span> <span class="o">+</span> <span class="s">&quot; from plugin &quot;</span> <span class="o">+</span> <span class="n">pluginname</span><span class="p">)</span>
+                <span class="n">event</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">,</span> <span class="n">eventname</span><span class="p">)</span>
+                <span class="n">event</span> <span class="o">-=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">plugin</span><span class="p">,</span> <span class="n">eventname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plugin</span><span class="o">.</span><span class="n">deactivate</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Error: Plugin </span><span class="si">%s</span><span class="s"> returned false on deactivation.&#39;</span> <span class="o">%</span> <span class="n">pluginname</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activeplugins</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pluginname</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+</div>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialise GBot: load IRC connection info from the configuration,</span>
+<span class="sd">        load plugins from the configuration, activate startup plugins, and</span>
+<span class="sd">        initialise the plugin timer task.&quot;&quot;&quot;</span>
+        <span class="c"># to delineate each launch in log file</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Starting pyGBot...&quot;</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Loading config file...&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">ConfigObj</span><span class="p">(</span><span class="s">&#39;pyGBot.ini&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Cant open config file: &quot;</span><span class="p">,</span> <span class="n">msg</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;IRC&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Config file does not contain IRC connection information&quot;</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;nick&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;nick&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;idpass&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">idpass</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;idpass&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;idnick&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">idnick</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;idnick&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;realname&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">realname</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;realname&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;usermodes&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">usermodes</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;usermodes&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;opernick&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opernick</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;opernick&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;operpass&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">operpass</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;operpass&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;ircpass&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;ircpass&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;minusmodes&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minusmodes</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;minusmodes&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;plusmodes&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plusmodes</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;plusmodes&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;flooddelay&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lineRate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;flooddelay&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;version&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;version&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">versionName</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;version&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;version&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;number&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">versionNum</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;version&#39;</span><span class="p">][</span><span class="s">&#39;number&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">whois</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">channelusers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">PluginEvents</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activeplugins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loadPlugins</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activatePlugin</span><span class="p">(</span><span class="s">&#39;system.Startup&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">timertask</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">LoopingCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">timer_tick</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">versionEnv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span>
+
+    <span class="c">############################################################################</span>
+    <span class="c"># Connection Callbacks</span>
+    <span class="c">############################################################################</span>
+<div class="viewcode-block" id="GBot.connectionMade"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.connectionMade">[docs]</a>    <span class="k">def</span> <span class="nf">connectionMade</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when a connection is made. &quot;&quot;&quot;</span>
+        <span class="n">irc</span><span class="o">.</span><span class="n">IRCClient</span><span class="o">.</span><span class="n">connectionMade</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;[connected at </span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span>\
+                        <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">timertask</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="c"># 1-second timer granularity</span>
+
+        <span class="c"># Call Event Handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">bot_connect</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="GBot.connectionLost"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.connectionLost">[docs]</a>    <span class="k">def</span> <span class="nf">connectionLost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when a connection is shut down. &quot;&quot;&quot;</span>
+        <span class="n">irc</span><span class="o">.</span><span class="n">IRCClient</span><span class="o">.</span><span class="n">connectionLost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;[disconnected at </span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span>\
+              <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())),</span> <span class="n">reason</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">timertask</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c"># Call Event Handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">bot_disconnect</span><span class="p">()</span>
+
+    <span class="c">############################################################################</span>
+    <span class="c"># Event Callbacks</span>
+    <span class="c">############################################################################</span></div>
+<div class="viewcode-block" id="GBot.signedOn"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.signedOn">[docs]</a>    <span class="k">def</span> <span class="nf">signedOn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when bot has succesfully signed on to the server. &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regNickServ</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">modestring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nickname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">usermodes</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">channel</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">joinChannel</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.regNickServ"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.regNickServ">[docs]</a>    <span class="k">def</span> <span class="nf">regNickServ</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; (private) Identify with NickServ from the configuration info. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;opernick&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;operpass&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sendLine</span><span class="p">(</span><span class="s">&#39;OPER </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opernick</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">operpass</span><span class="p">))</span>
+        
+        <span class="c"># Identify to nickserv</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;idnick&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;idpass&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">privout</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idnick</span><span class="p">,),</span> <span class="s">&#39;identify </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idpass</span><span class="p">,))</span>
+
+</div>
+<div class="viewcode-block" id="GBot.joined"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.joined">[docs]</a>    <span class="k">def</span> <span class="nf">joined</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot joins a channel. &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[I have joined </span><span class="si">%s</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">channel</span><span class="p">,))</span>
+
+        <span class="c"># Set modes</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;plusmodes&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plusmodes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;minusmodes&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minusmodes</span><span class="p">)</span>
+        
+        <span class="c"># Call Event Handler</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">channelIn</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">bot_join</span><span class="p">(</span><span class="n">channelIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.left"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.left">[docs]</a>    <span class="k">def</span> <span class="nf">left</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot leaves a channel. &quot;&quot;&quot;</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">channelIn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.kickedFrom"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.kickedFrom">[docs]</a>    <span class="k">def</span> <span class="nf">kickedFrom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">kicker</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot is kicked from a channel. &quot;&quot;&quot;</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">kickerIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">kicker</span><span class="p">)</span>
+        <span class="n">messageIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">channelIn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">channelIn</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">bot_kicked</span><span class="p">(</span><span class="n">channelIn</span><span class="p">,</span> <span class="n">kickerIn</span><span class="p">,</span> <span class="n">messageIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.noticed"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.noticed">[docs]</a>    <span class="k">def</span> <span class="nf">noticed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot receives a NOTICE. &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">userIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">msgIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[NTE&lt;-]&lt;</span><span class="si">%s</span><span class="s">&gt; </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+        <span class="c"># Call Event Handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">msg_notice</span><span class="p">(</span><span class="n">userIn</span><span class="p">,</span> <span class="n">msgIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.privmsg"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.privmsg">[docs]</a>    <span class="k">def</span> <span class="nf">privmsg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot receives a message (from channel or user). &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">userIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">msgIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c"># Private message to me</span>
+        <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+            <span class="c"># If auth msg has password, censor it for logging</span>
+            <span class="k">if</span> <span class="n">msgIn</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;auth&#39;</span><span class="p">):</span>
+                <span class="n">msgNoPwd</span> <span class="o">=</span> <span class="n">msgIn</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msgNoPwd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">msgNoPwd</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">8</span>
+                <span class="n">msgNoPwd</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msgNoPwd</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[PRV&lt;-]&lt;</span><span class="si">%s</span><span class="s">&gt; </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">msgNoPwd</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[PRV&lt;-]&lt;</span><span class="si">%s</span><span class="s">&gt; </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+            <span class="c"># Call Event Handler</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">msg_private</span><span class="p">(</span><span class="n">userIn</span><span class="p">,</span> <span class="n">msgIn</span><span class="p">)</span>
+
+        <span class="c"># Public message</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[PUB&lt;-]&lt;</span><span class="si">%s</span><span class="s">&gt; </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+            <span class="c"># Call Event Handler</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">msg_channel</span><span class="p">(</span><span class="n">channelIn</span><span class="p">,</span> <span class="n">userIn</span><span class="p">,</span> <span class="n">msgIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.action"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot sees someone do an action (/me). &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">userIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">msgIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;* </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+        <span class="c"># Call Event Handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">msg_action</span><span class="p">(</span><span class="n">channelIn</span><span class="p">,</span> <span class="n">userIn</span><span class="p">,</span> <span class="n">msgIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.topicUpdated"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.topicUpdated">[docs]</a>    <span class="k">def</span> <span class="nf">topicUpdated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">newTopic</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot sees the channel topic change. &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">userIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">newTopicIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">newTopic</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Topic for </span><span class="si">%s</span><span class="s"> set by </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">newTopic</span><span class="p">))</span>
+
+        <span class="c"># Call Event Handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">channel_topic</span><span class="p">(</span><span class="n">channelIn</span><span class="p">,</span> <span class="n">userIn</span><span class="p">,</span> <span class="n">newTopicIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.userJoined"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.userJoined">[docs]</a>    <span class="k">def</span> <span class="nf">userJoined</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when the bot sees a user joining a channel. &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">userIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> joined </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">))</span>
+
+        <span class="c"># Call Event Handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">user_join</span><span class="p">(</span><span class="n">channelIn</span><span class="p">,</span> <span class="n">userIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.userLeft"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.userLeft">[docs]</a>    <span class="k">def</span> <span class="nf">userLeft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when the bot sees a user leaving a channel. &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">userIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> has left </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">))</span>
+
+        <span class="c"># Call Event Handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">user_part</span><span class="p">(</span><span class="n">channelIn</span><span class="p">,</span> <span class="n">userIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.userKicked"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.userKicked">[docs]</a>    <span class="k">def</span> <span class="nf">userKicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">kicker</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot sees a user get kicked. &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">userIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">channelIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">kickerIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">kicker</span><span class="p">)</span>
+        <span class="n">messageIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> was kicked from </span><span class="si">%s</span><span class="s"> by </span><span class="si">%s</span><span class="s"> (reason: </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">kicker</span><span class="p">,</span> <span class="n">message</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">user_kicked</span><span class="p">(</span><span class="n">channelIn</span><span class="p">,</span> <span class="n">userIn</span><span class="p">,</span> <span class="n">kickerIn</span><span class="p">,</span> <span class="n">messageIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.userQuit"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.userQuit">[docs]</a>    <span class="k">def</span> <span class="nf">userQuit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">quitMessage</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot sees a user disconnect from the network. &quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">userIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">quitMsgIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">quitMessage</span><span class="p">)</span>
+        
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> has quit [</span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">quitMessage</span><span class="p">))</span>
+        
+        <span class="c"># Call Event Handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">user_quit</span><span class="p">(</span><span class="n">userIn</span><span class="p">,</span> <span class="n">quitMsgIn</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GBot.userRenamed"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBot.userRenamed">[docs]</a>    <span class="k">def</span> <span class="nf">userRenamed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oldname</span><span class="p">,</span> <span class="n">newname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when the bot sees a user change their nickname from oldname to</span>
+<span class="sd">        newname. &quot;&quot;&quot;</span>
+        <span class="n">oldnameIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">oldname</span><span class="p">)</span>
+        <span class="n">newnameIn</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">newname</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> is now known as </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">oldname</span><span class="p">,</span> <span class="n">newname</span><span class="p">))</span>
+        <span class="c"># Call Event Handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">user_nickchange</span><span class="p">(</span><span class="n">oldnameIn</span><span class="p">,</span> <span class="n">newnameIn</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="GBotFactory"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBotFactory">[docs]</a><span class="k">class</span> <span class="nc">GBotFactory</span><span class="p">(</span><span class="n">protocol</span><span class="o">.</span><span class="n">ClientFactory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A factory for tbots.</span>
+
+<span class="sd">    A new protocol instance is created each time we connect to the server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># the class of the protocol to build when new connection is made</span>
+    <span class="n">protocol</span> <span class="o">=</span> <span class="n">GBot</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">ConfigObj</span><span class="p">(</span><span class="s">&#39;pyGBot.ini&#39;</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Opening log file...&quot;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">addScreenHandler</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">log</span><span class="o">.</span><span class="n">formatter</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">addLogFileHandler</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span><span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;logfile&#39;</span><span class="p">],</span><span class="n">log</span><span class="o">.</span><span class="n">formatter</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Unable to open log file: &quot;</span><span class="p">,</span> <span class="n">msg</span>
+            <span class="k">print</span> <span class="s">&quot;Defaulting to local.&quot;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">addLogFileHandler</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span><span class="s">&#39;pyGBot.log&#39;</span><span class="p">,</span><span class="n">log</span><span class="o">.</span><span class="n">formatter</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;No log file config found. Defaulting to local.&quot;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">addLogFileHandler</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span><span class="s">&#39;pyGBot.log&#39;</span><span class="p">,</span><span class="n">log</span><span class="o">.</span><span class="n">formatter</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Opening log file...&quot;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">addLogFileHandler</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="p">,</span><span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;chatlogfile&#39;</span><span class="p">],</span><span class="n">log</span><span class="o">.</span><span class="n">cformat</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Unable to open log file: &quot;</span><span class="p">,</span> <span class="n">msg</span>
+            <span class="k">print</span> <span class="s">&quot;Defaulting to local.&quot;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">addLogFileHandler</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="p">,</span><span class="s">&#39;chat.log&#39;</span><span class="p">,</span><span class="n">log</span><span class="o">.</span><span class="n">cformat</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;No log file config found. Defaulting to local.&quot;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">addLogFileHandler</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">chatlog</span><span class="p">,</span><span class="s">&#39;chat.log&#39;</span><span class="p">,</span><span class="n">log</span><span class="o">.</span><span class="n">cformat</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GBotFactory.clientConnectionLost"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBotFactory.clientConnectionLost">[docs]</a>    <span class="k">def</span> <span class="nf">clientConnectionLost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connector</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If we get disconnected, reconnect to server.&quot;&quot;&quot;</span>
+
+        <span class="n">connector</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="GBotFactory.clientConnectionFailed"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.GBotFactory.clientConnectionFailed">[docs]</a>    <span class="k">def</span> <span class="nf">clientConnectionFailed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connector</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when a client&#39;s connection fails. Log the error and exit. &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s">&#39;connection failed: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">reason</span><span class="p">),))</span>
+        <span class="n">reactor</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</div></div>
+<div class="viewcode-block" id="stripcolors"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.stripcolors">[docs]</a><span class="k">def</span> <span class="nf">stripcolors</span><span class="p">(</span><span class="n">inmsg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Strip color codes from a string. &quot;&quot;&quot;</span>
+    <span class="c"># TODO: Fix this</span>
+    <span class="n">inmsg</span> <span class="o">=</span> <span class="n">inmsg</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\x02\x03</span><span class="s">01,00&quot;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">inmsg</span> <span class="o">=</span> <span class="n">inmsg</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\x02\x03</span><span class="s">02,00&quot;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">inmsg</span> <span class="o">=</span> <span class="n">inmsg</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\x02\x03</span><span class="s">03,00&quot;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">inmsg</span> <span class="o">=</span> <span class="n">inmsg</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\x02\x03</span><span class="s">04,00&quot;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">inmsg</span> <span class="o">=</span> <span class="n">inmsg</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\x0F</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">inmsg</span>
+</div>
+<div class="viewcode-block" id="encodeOut"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.encodeOut">[docs]</a><span class="k">def</span> <span class="nf">encodeOut</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Encode output text as a UTF-8 byte-string, replacing any invalid</span>
+<span class="sd">    characters with &#39;?&#39;. If the msg argument is not a unicode string, return</span>
+<span class="sd">    the argument. This allows correct output of Unicode characters. &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
+        <span class="n">encMsg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s">&#39;replace&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">encMsg</span> <span class="o">=</span> <span class="n">msg</span>
+    <span class="k">return</span> <span class="n">encMsg</span>
+</div>
+<div class="viewcode-block" id="decodeIn"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.decodeIn">[docs]</a><span class="k">def</span> <span class="nf">decodeIn</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Decode input text as UTF-8, replacing any invalid characters with &#39;?&#39;,</span>
+<span class="sd">    and return a unicode string. If the msg argument is already a unicode</span>
+<span class="sd">    string, return the argument. This allows plugins to correctly receive and</span>
+<span class="sd">    handle unicode-type strings internally. &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
+        <span class="n">decMsg</span> <span class="o">=</span> <span class="n">msg</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">decMsg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s">&#39;replace&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">decMsg</span>
+</div>
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../pyGBot/core.html#pyGBot.core.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Run GBot. Called from the pyGBot bootstrap script. &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">ConfigObj</span><span class="p">(</span><span class="s">&#39;pyGBot.ini&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;Can&#39;t open config file: &quot;</span><span class="p">,</span> <span class="n">msg</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;IRC&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;Config file does not contain IRC connection information.&quot;</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">channel</span> <span class="o">=</span> <span class="n">decodeIn</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;channel&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;host&#39;</span><span class="p">]</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;port&#39;</span><span class="p">])</span>
+    <span class="k">except</span> <span class="n">ConfigObjError</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;Required IRC connection info missing or invalid.&quot;</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">localport</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">localaddr</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;localport&#39;</span><span class="p">):</span>
+        <span class="n">localport</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;localport&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;localaddr&#39;</span><span class="p">):</span>
+        <span class="n">localaddr</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;localaddr&#39;</span><span class="p">]</span>
+
+    <span class="k">print</span> <span class="s">&quot;Initialising Factory...&quot;</span>
+    <span class="c"># create factory protocol and application</span>
+    <span class="n">fact</span> <span class="o">=</span> <span class="n">GBotFactory</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="s">&#39;UNUSED&#39;</span><span class="p">)</span>
+    
+    <span class="c"># SSL support</span>
+    <span class="n">sslconnect</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;ssl&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s">&#39;IRC&#39;</span><span class="p">][</span><span class="s">&#39;ssl&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&quot;true&quot;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">ssl</span>
+            <span class="c"># create SSL factory</span>
+            <span class="n">cfact</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">ClientContextFactory</span><span class="p">()</span>
+            <span class="n">sslconnect</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">print</span> <span class="s">&quot;Connecting...&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c"># connect factory to this host and port, with SSL if enabled</span>
+        <span class="k">if</span> <span class="n">sslconnect</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">localaddr</span> <span class="ow">and</span> <span class="n">localport</span><span class="p">:</span>
+                <span class="n">reactor</span><span class="o">.</span><span class="n">connectSSL</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">fact</span><span class="p">,</span> <span class="n">cfact</span><span class="p">,</span> <span class="n">bindAddress</span><span class="o">=</span><span class="p">(</span><span class="n">localaddr</span><span class="p">,</span> <span class="n">localport</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">reactor</span><span class="o">.</span><span class="n">connectSSL</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">fact</span><span class="p">,</span> <span class="n">cfact</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">localaddr</span> <span class="ow">and</span> <span class="n">localport</span><span class="p">:</span>
+                <span class="n">reactor</span><span class="o">.</span><span class="n">connectTCP</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">fact</span><span class="p">,</span> <span class="n">bindAddress</span><span class="o">=</span><span class="p">(</span><span class="n">localaddr</span><span class="p">,</span> <span class="n">localport</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">reactor</span><span class="o">.</span><span class="n">connectTCP</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">fact</span><span class="p">)</span>
+
+        <span class="c"># run bot</span>
+        <span class="n">reactor</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;Unexpected error:&quot;</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">raise</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyGBot 0.3.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Morgan Lokhorst-Blight, Alex Soborov, Paul Rotering.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+API
+====================
+
+.. toctree::
+   pyGBot/core <pyGBot/core>
+   pyGBot/log <pyGBot/log>
+   pyGBot/PluginEvents <pyGBot/PluginEvents>
+   pyGBot/BasePlugin <pyGBot/BasePlugin>
+   :maxdepth: 2

@@ -1,0 +1,213 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyGBot.BasePlugin &mdash; pyGBot 0.3.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pyGBot 0.3.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyGBot 0.3.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyGBot.BasePlugin</h1><div class="highlight"><pre>
+<span class="c">##</span>
+<span class="c">##    pyGBot - Versatile IRC Bot</span>
+<span class="c">##    Copyright (C) 2008 Morgan Lokhorst-Blight, Alex Soborov</span>
+<span class="c">##</span>
+<span class="c">##    This program is free software: you can redistribute it and/or modify</span>
+<span class="c">##    it under the terms of the GNU General Public License as published by</span>
+<span class="c">##    the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c">##    (at your option) any later version.</span>
+<span class="c">##</span>
+<span class="c">##    This program is distributed in the hope that it will be useful,</span>
+<span class="c">##    but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c">##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c">##    GNU General Public License for more details.</span>
+<span class="c">##</span>
+<span class="c">##    You should have received a copy of the GNU General Public License</span>
+<span class="c">##    along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c">##</span>
+
+<span class="c">################################################################################</span>
+<span class="c">## </span>
+<span class="c">## Plugin</span>
+<span class="c">## </span>
+<span class="c">################################################################################</span>
+
+<div class="viewcode-block" id="BasePlugin"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin">[docs]</a><span class="k">class</span> <span class="nc">BasePlugin</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bot</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the plugin is initialized &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot</span> <span class="o">=</span> <span class="n">bot</span>
+
+<div class="viewcode-block" id="BasePlugin.activate"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.activate">[docs]</a>    <span class="k">def</span> <span class="nf">activate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the plugin is activated. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.deactivate"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.deactivate">[docs]</a>    <span class="k">def</span> <span class="nf">deactivate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the plugin is deactivated. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="c">############################################################################</span>
+    <span class="c"># Event handlers for other users</span>
+    <span class="c">############################################################################</span></div>
+<div class="viewcode-block" id="BasePlugin.user_join"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.user_join">[docs]</a>    <span class="k">def</span> <span class="nf">user_join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when a user is seen joining a channel &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.user_part"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.user_part">[docs]</a>    <span class="k">def</span> <span class="nf">user_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when a user is seen parting a channel &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.user_kicked"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.user_kicked">[docs]</a>    <span class="k">def</span> <span class="nf">user_kicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">kicker</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when a user is seen being kicked from a channel &quot;&quot;&quot;</span> 
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.user_quit"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.user_quit">[docs]</a>    <span class="k">def</span> <span class="nf">user_quit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when a user is seen quitting the network &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.user_nickchange"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.user_nickchange">[docs]</a>    <span class="k">def</span> <span class="nf">user_nickchange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">newname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when a user is seen changing nicks &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="c">############################################################################</span>
+    <span class="c"># Event handlers for this bot</span>
+    <span class="c">############################################################################</span></div>
+<div class="viewcode-block" id="BasePlugin.bot_connect"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.bot_connect">[docs]</a>    <span class="k">def</span> <span class="nf">bot_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot connects to the network &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.bot_join"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.bot_join">[docs]</a>    <span class="k">def</span> <span class="nf">bot_join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot joins a channel &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.bot_part"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.bot_part">[docs]</a>    <span class="k">def</span> <span class="nf">bot_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot parts a channel &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.bot_kicked"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.bot_kicked">[docs]</a>    <span class="k">def</span> <span class="nf">bot_kicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">kicker</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot is kicked from a channel &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.bot_disconnect"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.bot_disconnect">[docs]</a>    <span class="k">def</span> <span class="nf">bot_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot disconnects from the network &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="c">############################################################################</span>
+    <span class="c"># Event handlers for incoming messages</span>
+    <span class="c">############################################################################</span></div>
+<div class="viewcode-block" id="BasePlugin.msg_channel"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.msg_channel">[docs]</a>    <span class="k">def</span> <span class="nf">msg_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot sees a message in a channel &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.msg_action"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.msg_action">[docs]</a>    <span class="k">def</span> <span class="nf">msg_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot sees an action &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.msg_private"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.msg_private">[docs]</a>    <span class="k">def</span> <span class="nf">msg_private</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot receives a privmsg &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.msg_notice"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.msg_notice">[docs]</a>    <span class="k">def</span> <span class="nf">msg_notice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot receives a notice &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="c">############################################################################</span>
+    <span class="c"># Event handlers for channel information replies</span>
+    <span class="c">############################################################################</span></div>
+<div class="viewcode-block" id="BasePlugin.channel_names"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.channel_names">[docs]</a>    <span class="k">def</span> <span class="nf">channel_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">nameslist</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot receives a list of names &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BasePlugin.channel_topic"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.channel_topic">[docs]</a>    <span class="k">def</span> <span class="nf">channel_topic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">topic</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called when the bot receives a channel topic &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="c">############################################################################</span>
+    <span class="c"># Other system event handlers</span>
+    <span class="c">############################################################################</span></div>
+<div class="viewcode-block" id="BasePlugin.timer_tick"><a class="viewcode-back" href="../../pyGBot/BasePlugin.html#pyGBot.BasePlugin.BasePlugin.timer_tick">[docs]</a>    <span class="k">def</span> <span class="nf">timer_tick</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called once every second &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyGBot 0.3.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Morgan Lokhorst-Blight, Alex Soborov, Paul Rotering.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

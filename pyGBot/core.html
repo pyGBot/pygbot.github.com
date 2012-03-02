@@ -1,0 +1,362 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Core &mdash; pyGBot 0.3.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.3.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pyGBot 0.3.0 documentation" href="../index.html" />
+    <link rel="up" title="Documentation" href="../docs.html" />
+    <link rel="next" title="log" href="log.html" />
+    <link rel="prev" title="runpyGBot" href="../runpyGBot.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="log.html" title="log"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../runpyGBot.html" title="runpyGBot"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyGBot 0.3.0 documentation</a> &raquo;</li>
+          <li><a href="../docs.html" accesskey="U">Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pyGBot.core">
+<span id="core"></span><h1>Core<a class="headerlink" href="#module-pyGBot.core" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pyGBot.core.GBot">
+<em class="property">class </em><tt class="descclassname">pyGBot.core.</tt><tt class="descname">GBot</tt><a class="reference internal" href="../_modules/pyGBot/core.html#GBot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>No longer just an IRC Texas Holdem tournament dealer</p>
+<dl class="method">
+<dt id="pyGBot.core.GBot.pubout">
+<tt class="descname">pubout</tt><big>(</big><em>channel</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.pubout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.pubout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a message to a channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.privout">
+<tt class="descname">privout</tt><big>(</big><em>user</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.privout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.privout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a message to a user.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.replyout">
+<tt class="descname">replyout</tt><big>(</big><em>channel</em>, <em>user</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.replyout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.replyout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a reply. If channel is None, the reply is sent to the user;
+otherwise, it is sent to the channel. Use this in plugins or commands
+when an incoming message can be either from a channel or a user and the
+outgoing message should be resent to the source.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.noteout">
+<tt class="descname">noteout</tt><big>(</big><em>user</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.noteout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.noteout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a notice to a user.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.invite">
+<tt class="descname">invite</tt><big>(</big><em>user</em>, <em>channel</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.invite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.invite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a channel invite to a user.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.joinChannel">
+<tt class="descname">joinChannel</tt><big>(</big><em>channel</em>, <em>key=None</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.joinChannel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.joinChannel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Join a channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.actout">
+<tt class="descname">actout</tt><big>(</big><em>channel</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.actout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.actout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an action (/me) to a channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.modestring">
+<tt class="descname">modestring</tt><big>(</big><em>target</em>, <em>modestring</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.modestring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.modestring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a mode string on a user or channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.cprivmsg">
+<tt class="descname">cprivmsg</tt><big>(</big><em>channel</em>, <em>user</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.cprivmsg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.cprivmsg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a CPRIVMSG. This allows channel ops to bypass server flood
+limits when messaging users in their channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.cnotice">
+<tt class="descname">cnotice</tt><big>(</big><em>channel</em>, <em>user</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.cnotice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.cnotice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a CNOTICE. THis allows channel ops to bypass server flood
+limits when sending a notice to users in their channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.loadPlugins">
+<tt class="descname">loadPlugins</tt><big>(</big><em>conf</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.loadPlugins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.loadPlugins" title="Permalink to this definition">¶</a></dt>
+<dd><p>(private) Load all registered plugins.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.loadPluginFromFile">
+<tt class="descname">loadPluginFromFile</tt><big>(</big><em>pluginmodule</em>, <em>pluginname</em>, <em>conf</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.loadPluginFromFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.loadPluginFromFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>(private) Load a plugin from its file and initialise it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.activatePlugin">
+<tt class="descname">activatePlugin</tt><big>(</big><em>pluginname</em>, <em>channel=None</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.activatePlugin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.activatePlugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>(private) Activate a loaded plugin.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.deactivatePlugin">
+<tt class="descname">deactivatePlugin</tt><big>(</big><em>pluginname</em>, <em>channel=None</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.deactivatePlugin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.deactivatePlugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>(private) Deactivates a loaded plugin.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.connectionMade">
+<tt class="descname">connectionMade</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.connectionMade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.connectionMade" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a connection is made.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.connectionLost">
+<tt class="descname">connectionLost</tt><big>(</big><em>reason</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.connectionLost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.connectionLost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a connection is shut down.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.signedOn">
+<tt class="descname">signedOn</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.signedOn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.signedOn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when bot has succesfully signed on to the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.regNickServ">
+<tt class="descname">regNickServ</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.regNickServ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.regNickServ" title="Permalink to this definition">¶</a></dt>
+<dd><p>(private) Identify with NickServ from the configuration info.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.joined">
+<tt class="descname">joined</tt><big>(</big><em>channel</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.joined"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.joined" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot joins a channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.left">
+<tt class="descname">left</tt><big>(</big><em>channel</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.left"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.left" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot leaves a channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.kickedFrom">
+<tt class="descname">kickedFrom</tt><big>(</big><em>channel</em>, <em>kicker</em>, <em>message</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.kickedFrom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.kickedFrom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot is kicked from a channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.noticed">
+<tt class="descname">noticed</tt><big>(</big><em>user</em>, <em>channel</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.noticed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.noticed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot receives a NOTICE.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.privmsg">
+<tt class="descname">privmsg</tt><big>(</big><em>user</em>, <em>channel</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.privmsg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.privmsg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot receives a message (from channel or user).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.action">
+<tt class="descname">action</tt><big>(</big><em>user</em>, <em>channel</em>, <em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot sees someone do an action (/me).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.topicUpdated">
+<tt class="descname">topicUpdated</tt><big>(</big><em>user</em>, <em>channel</em>, <em>newTopic</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.topicUpdated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.topicUpdated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot sees the channel topic change.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.userJoined">
+<tt class="descname">userJoined</tt><big>(</big><em>user</em>, <em>channel</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.userJoined"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.userJoined" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot sees a user joining a channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.userLeft">
+<tt class="descname">userLeft</tt><big>(</big><em>user</em>, <em>channel</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.userLeft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.userLeft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot sees a user leaving a channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.userKicked">
+<tt class="descname">userKicked</tt><big>(</big><em>user</em>, <em>channel</em>, <em>kicker</em>, <em>message</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.userKicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.userKicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot sees a user get kicked.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.userQuit">
+<tt class="descname">userQuit</tt><big>(</big><em>user</em>, <em>quitMessage</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.userQuit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.userQuit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot sees a user disconnect from the network.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBot.userRenamed">
+<tt class="descname">userRenamed</tt><big>(</big><em>oldname</em>, <em>newname</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBot.userRenamed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBot.userRenamed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the bot sees a user change their nickname from oldname to
+newname.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyGBot.core.GBotFactory">
+<em class="property">class </em><tt class="descclassname">pyGBot.core.</tt><tt class="descname">GBotFactory</tt><big>(</big><em>channel</em>, <em>filename</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBotFactory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBotFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>A factory for gbots.</p>
+<p>A new protocol instance is created each time we connect to the server.</p>
+<dl class="attribute">
+<dt id="pyGBot.core.GBotFactory.protocol">
+<tt class="descname">protocol</tt><a class="headerlink" href="#pyGBot.core.GBotFactory.protocol" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#pyGBot.core.GBot" title="pyGBot.core.GBot"><tt class="xref py py-class docutils literal"><span class="pre">GBot</span></tt></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBotFactory.clientConnectionLost">
+<tt class="descname">clientConnectionLost</tt><big>(</big><em>connector</em>, <em>reason</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBotFactory.clientConnectionLost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBotFactory.clientConnectionLost" title="Permalink to this definition">¶</a></dt>
+<dd><p>If we get disconnected, reconnect to server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyGBot.core.GBotFactory.clientConnectionFailed">
+<tt class="descname">clientConnectionFailed</tt><big>(</big><em>connector</em>, <em>reason</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#GBotFactory.clientConnectionFailed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.GBotFactory.clientConnectionFailed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a client&#8217;s connection fails. Log the error and exit.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGBot.core.stripcolors">
+<tt class="descclassname">pyGBot.core.</tt><tt class="descname">stripcolors</tt><big>(</big><em>inmsg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#stripcolors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.stripcolors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Strip color codes from a string.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGBot.core.encodeOut">
+<tt class="descclassname">pyGBot.core.</tt><tt class="descname">encodeOut</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#encodeOut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.encodeOut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode output text as a UTF-8 byte-string, replacing any invalid
+characters with &#8216;?&#8217;. If the msg argument is not a unicode string, return
+the argument. This allows correct output of Unicode characters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGBot.core.decodeIn">
+<tt class="descclassname">pyGBot.core.</tt><tt class="descname">decodeIn</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#decodeIn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.decodeIn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode input text as UTF-8, replacing any invalid characters with &#8216;?&#8217;,
+and return a unicode string. If the msg argument is already a unicode
+string, return the argument. This allows plugins to correctly receive and
+handle unicode-type strings internally.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGBot.core.run">
+<tt class="descclassname">pyGBot.core.</tt><tt class="descname">run</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pyGBot/core.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyGBot.core.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run GBot. Called from the pyGBot bootstrap script.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../runpyGBot.html"
+                        title="previous chapter">runpyGBot</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="log.html"
+                        title="next chapter">log</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="log.html" title="log"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../runpyGBot.html" title="runpyGBot"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyGBot 0.3.0 documentation</a> &raquo;</li>
+          <li><a href="../docs.html" >Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Morgan Lokhorst-Blight, Alex Soborov, Paul Rotering.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

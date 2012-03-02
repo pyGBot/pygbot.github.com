@@ -1,0 +1,35 @@
+.. pyGBot documentation master file, created by
+   sphinx-quickstart on Wed Feb 29 19:09:25 2012.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to pyGBot's documentation!
+==================================
+
+pyGBot is an extensible IRC bot written in Python, featuring an easy to use
+plugin interface and optimization for running games into a channel.
+
+Please note: Documentation is in-progress and not yet complete. 
+
+--------------------
+
+Contents:
+
+.. toctree::
+   Setting up <setup>
+   Configuration values <config>
+   Writing a plugin <plugin>
+
+Framework:
+
+.. toctree::
+   Project source/download <http://github.com/pyGBot/pyGBot>
+   Source documentation <docs>
+   :maxdepth: 0
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
